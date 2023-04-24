@@ -1,0 +1,51 @@
+﻿@inject PersonalInfoServices service
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Primeiro Nome</th>
+            <th>Segundo Nome</th>
+            <th>Profissao</th>
+            <th>Breve descrição</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Items)
+        {
+            <tr>
+                <td>@(++count)</td>
+                <td>@item.FirstName</td>
+                <td>@item.LastName</td>
+                <td>@item.Carrer</td>
+                <td>@item.Intro</td>
+                <td>
+                    <button @onclick="@(e => OnClickeEditBtn(item.Id))" class="btn btn-outline-warning">Editar</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter]
+    public List<PersonalInfo> Items { get; set; } = new List<PersonalInfo>();
+
+    [Parameter]
+    public EventCallback<PersonalInfo> OnEdit { get; set; }
+
+    int count = 0;
+
+    protected override void OnParametersSet()
+    {
+        count = 0;
+    }
+
+    async Task OnClickeEditBtn(int id)
+    {
+        PersonalInfo modelEdit = await service.GetDataById(id);
+
+        OnEdit.InvokeAsync(modelEdit);
+    }
+}

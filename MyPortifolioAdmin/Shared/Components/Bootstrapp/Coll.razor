@@ -1,0 +1,11 @@
+﻿<div class="col @Colls">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public string Colls { get; set; } = string.Empty;
+}

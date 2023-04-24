@@ -1,0 +1,117 @@
+﻿@page "/personalinfo"
+@inject PersonalInfoServices service
+
+<Row>
+    <Coll Colls="col-md-6">
+        <Card Title="Dados Pessoais">
+            <ListPersonalInfo OnEdit="OnEditData" Items=@items />
+        </Card>
+    </Coll>
+
+    <Coll Colls="col-md-6">
+        <Card Title=@cardTitle>
+            <EditForm Model="model" OnSubmit="SubmitForm">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <Row>
+                    <Coll Colls="form-group col-md-6">
+                        <label id="firstName">Primeiro nome</label>
+                        <InputText id="firstName" @bind-Value="model.FirstName" class="form-control" />
+                    </Coll>
+
+                    <Coll Colls="form-group col-md-6">
+                        <label id="LastName">Ultimo nome</label>
+                        <InputText id="LastName" @bind-Value="model.LastName" class="form-control" />
+                    </Coll>
+                </Row>
+
+                <Row>
+                    <Coll Colls="form-group">
+                        <label id="Carrer">Profissãp</label>
+                        <InputText id="Carrer" @bind-Value="model.Carrer" class="form-control" />
+                    </Coll>
+                </Row>
+
+                <Row>
+                    <Coll Colls="form-group">
+                        <label id="Intro">Breve Descrição</label>
+                        <InputTextArea id="Intro" @bind-Value="model.Intro" class="form-control" />
+                    </Coll>
+                </Row>
+
+                <Row>
+                    <Coll Colls="form-group">
+                        <label id="Description">Descrição Completa</label>
+                        <InputTextArea id="Description" @bind-Value="model.Description" class="form-control" />
+                    </Coll>
+                </Row>
+                <hr />
+
+                <Row>
+                    <Coll Colls="col-md-6">
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                        <button type="reset" @onclick="LimparForm" class="btn btn-warning">Limpar dados</button>
+                    </Coll>
+                    @if (isEdited && model.Id != 1)
+                    {
+                        <Coll Colls="col-md-6">
+                            <button type="button" @onclick="DeletarRegistro" class="btn btn-danger px-4">Deletar Registro</button>
+                        </Coll>
+                    }
+                </Row>
+            </EditForm>
+        </Card>
+    </Coll>
+</Row>
+
+@code {
+    PersonalInfo model = new();
+    List<PersonalInfo> items = new List<PersonalInfo>();
+    string cardTitle = "Novo Registro";
+    bool isEdited = false;
+
+    protected override async Task OnInitializedAsync() => items = await service.GetAllData();
+
+    async Task SubmitForm()
+    {
+        if (!isEdited)
+        {
+            var result = await service.PostData(model);
+            cardTitle = "Novo Registro";
+            cardTitle = result ? "Criado com sucesso" : "Alguma coisa correu mal";
+            if (result) this.LimparForm();
+        }
+        else
+        {
+            var result = await service.PutData(model);
+            cardTitle = "Editar Registro";
+            cardTitle = result ? "Editado com sucesso" : "Alguma coisa correu mal";
+        }
+        items = await service.GetAllData();
+    }
+
+    void OnEditData(PersonalInfo modelEdit)
+    {
+        model = modelEdit;
+        cardTitle = "Editar Registro";
+        isEdited = true;
+    }
+
+    void LimparForm()
+    {
+        model = new();
+        cardTitle = "Novo Registro";
+        isEdited = false;
+    }
+
+    async Task DeletarRegistro()
+    {
+        var resut = await service.DeleteData(model);
+        if (resut)
+            this.LimparForm();
+        else
+            cardTitle = "Erro ao deletar";
+
+        items = await service.GetAllData();
+    }
+}
